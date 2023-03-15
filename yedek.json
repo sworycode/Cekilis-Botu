@@ -1,0 +1,205 @@
+const Discord = require('discord.js');
+const client = new Discord.Client();
+const işaret = require('./işaret.json')
+const { Client, MessageEmbed } = require('discord.js')
+
+var prefix = işaret.prefix
+
+client.on('ready', () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+  client.user.setActivity('RinealNetwork', { type: 'PLAYING' })
+  .then(presence => console.log(`Activity set to ${presence.game ? presence.game.name : 'none'}`))
+  .catch(console.error);
+});
+
+client.on('message', message => {
+  if (message.content.toLowerCase() === prefix + 'kurallar') {
+    const kanal = new MessageEmbed()
+
+    .setTitle('RinealNetwork | Kurallar')
+    .setDescription('Neden kurallara uymalıyım?')
+    .setAuthor('Kurallara uymazsan çeşitli şekilde cezalar yiyebilirsin.')
+    .setColor("RANDOM")
+    .setThumbnail('https://cdn.discordapp.com/attachments/1053935003723104306/1065607205388308490/6eba0fa58a6ecf50abe71b03c0b0bfa7--letter-logo-letters.jpg')
+
+    .addField('Kurallara göz atmak için #kurallar', ':heart:');
+    message.channel.send(kanal);
+  }
+});
+
+
+
+client.on('message', message => {
+  if (!message.guild) return;
+  if (message.content.startsWith('!kick')) {
+    if (!message.member.hasPermission('ADMINISTRATOR')) return message.channel.send('Bunu yapamazsın')
+    const user = message.mentions.users.first();
+    if (user) {
+      const member = message.guild.member(user);
+      if (member) {
+        member
+          .kick()
+          .then(() => {
+          const log = message.guild.channels.cache.find(channel => channel.name
+ === '1059010205624569896')
+           log.send(`${user.tag} kişisi kicklenmiştir`);
+          })
+          .catch(err => {
+            message.channel.send('Bunu yapamam.');
+            console.error(err);
+          });
+      } else {
+        message.channel.send("Bahsettiğin kişi bizim sunucuda bulunmuyor");
+      }
+    } else {
+      message.channel.send("Atılacak kişiyi yazmadın");
+    }
+  }
+});
+
+client.on('message', (message) => {
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+  const args = message.content
+    .toLowerCase()
+    .slice(prefix.length)
+    .trim()
+    .split(/\s+/);
+  const [command, input] = args;
+
+  if (command === 'sil' || command === 'clear') {
+    if (!message.member.hasPermission('MANAGE_MESSAGES')) {
+      return message.channel
+        .send(
+          "Bunu yapabilmek için mesajları yönet yetkisine sahip olman gerekiyor.",
+        );
+    }
+
+    if (isNaN(input)) {
+      return message.channel
+        .send('Silmek istediğiniz mesaj miktarınızı girin.')
+        .then((sent) => {
+          setTimeout(() => {
+            sent.delete();
+          }, 2500);
+        });
+    }
+
+    if (Number(input) < 0) {
+      return message.channel
+        .send('Bir sayı girin.')
+        .then((sent) => {
+          setTimeout(() => {
+            sent.delete();
+          }, 2500);
+        });
+    }
+
+    // add an extra to delete the current message too
+    const amount = Number(input) > 100
+      ? 101
+      : Number(input) + 1;
+
+    message.channel.bulkDelete(amount, true)
+    .then((_message) => {
+      message.channel
+        // do you want to include the current message here?
+        // if not it should be ${_message.size - 1}
+        .send(`Başarıyla \`${_message.size}\` mesaj silindi.`)
+        .then((sent) => {
+          setTimeout(() => {
+            sent.delete();
+          }, 2500);
+        });
+    });
+  }
+
+  if (command === 'yardım' && input === 'temizle') {
+    const newEmbed = new MessageEmbed()
+      .setColor('#00B2B2')
+      .setTitle('**Temizleme Yardımı**')
+      .setDescription(
+        `Bu komut mesajları temizler örneğin \`${prefix}sil 5\` ve \`${prefix}clear 5\`.`,
+      )
+      .setFooter(
+        `Requested by ${message.author.tag}`,
+        message.author.displayAvatarURL(),
+      )
+      .setTimestamp();
+
+    message.channel.send(newEmbed);
+  }
+});
+
+client.on("guildMemberAdd", member => {
+   const kanal = new MessageEmbed()
+   .setColor("GREEN")
+   .setThumbnail(member.avatarURL)
+   .setDescription(`Sunucumuza hoşgeldin **${member.user.username}**! Şuan sunucumuz **${member.guild.memberCount}** kişi!`)
+   member.guild.channels.get("1065667004033404928").send({embed: embed})
+       message.channel.send(kanal);
+});
+
+client.on("guildMemberRemove", member => {
+   const kanal = new MessageEmbed()
+   .setColor("GREEN")
+   .setThumbnail(member.avatarURL)
+   .setDescription(`:x: **${member.user.username}** Sunucumuzdan ayrıldı! Toplam **${member.guild.memberCount}** üyeyiz!`)
+   member.guild.channels.get("1065667004033404928").send({embed: embed})
+       message.channel.send(kanal);
+});
+
+
+client.on('message', message => {
+  if (!message.guild) return;
+if (message.content.startsWith('!ban')) {
+    if (!message.member.hasPermission('ADMINISTRATOR')) return message.channel.send('Bunu yapamazsın')
+    const user = message.mentions.users.first();
+    if (user) {
+      const member = message.guild.member(user);
+      if (member) {
+        member
+          .ban()
+          .then(() => {
+          const log = message.guild.channels.cache.find(channel => channel.name
+ === '1059010363519160360')
+           log.send(`${user.tag} kişisi banlanmıştır.`);
+          })
+          .catch(err => {
+            message.channel.send('Bunu yapamam.');
+            console.error(err);
+          });
+      } else {
+        message.channel.send("Bahsettiğin kişi bizim sunucuda bulunmuyor");
+      }
+    } else {
+      message.channel.send("Yasaklanacak kişiyi yazmadın.");
+    }
+  }
+});
+
+client.on("message", message => {
+  if (message.content.startsWith('rolver')) {
+    if (!message.member.hasPermission('ADMINISTRATOR')) return message.channel.send('Bunu yapamazsın')
+    let role = message.mentions.roles.first();
+    let member = message.mentions.members.first();
+    member.roles.remove(role)
+    message.channel.send("Başarıyla rol alındı.")
+  }
+});
+
+client.on("message", message => {
+  if (message.content.startsWith('rolver')) {
+    if (!message.member.hasPermission('ADMINISTRATOR')) return message.channel.send('Bunu yapamazsın')
+    let role = message.mentions.roles.first();
+    let member = message.mentions.members.first();
+    member.roles.add(role)
+    message.channel.send("Başarıyla rol verildi.")
+  }
+});
+
+try {
+// yazacağınız komut
+} catch(e) {
+console.log(e)
+}
